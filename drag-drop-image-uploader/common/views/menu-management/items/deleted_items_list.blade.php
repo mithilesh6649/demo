@@ -1,0 +1,220 @@
+@extends('adminlte::page')
+
+@section('title', 'Super Admin | Deleted Items')
+
+@section('content_header')
+@stop
+
+@section('content')
+
+<div class="container">
+   <div class="alert d-none" role="alert" id="flash-message">        
+    </div>
+  <div class="row justify-content-center">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-main">
+          <div class="card-header alert d-flex justify-content-between align-items-center mx-0 pt-0">
+            <h3>Deleted Items</h3>
+          </div>    
+          <div class="card-body table p-0 mb-0">
+            @if (session('status'))
+              <div class="alert alert-success" role="alert">
+                {{ session('status') }}
+              </div>
+            @endif
+
+          
+            <table style="width:100%" id="users-list" class="table table-bordered table-hover yajra-datatable">
+              <thead>
+                <tr>
+                
+                   <th>Item Name(en)</th>
+                  <th>Item Name(ar)</th>
+                  
+                
+                @if(Gate::check('restore_menu_item') || Gate::check('permanent_deleted_menu_item'))
+                  <th>Actions</th> 
+               @endif
+
+                </tr>
+              </thead>
+              <tbody>
+                @foreach($itemsList as $key => $data)
+               <tr> 
+                 <td> {{ $data->item_name_en  ?? 'N/A'}}</td>
+                <td>{{ $data->item_name_ar  ?? 'N/A'}}</td>
+                
+               
+                    
+                     @if(Gate::check('restore_menu_item') || Gate::check('permanent_deleted_menu_item'))
+              
+                        <td>
+
+                            @can('restore_menu_item')
+                            <a class="action-button restore-button" title="Restore" href="javascript:void(0)"  data-id="{{ $data->id}}"><i class="text-success fa fa-undo"></i></a>
+                            @endcan
+
+                             @can('permanent_deleted_menu_item')
+                            <a class="action-button delete-button" title=" Permanent Delete" href="javascript:void(0)" data-id="{{ $data->id}}"><i class="text-danger fa fa-trash-alt"></i></a>
+                           @endcan
+                        </td>
+
+
+                      @endif
+                      
+               </tr>
+             
+               @endforeach
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+@endsection
+
+@section('css')
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css">
+@stop
+
+@section('js')
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
+  <script type="text/javascript" src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
+  
+  
+  <script>
+   
+   $(document).ready(function(){
+
+    $(document).ready(function() {
+      $('#users-list').DataTable( {
+        stateSave: true,
+        columnDefs: [ {
+          targets: 0,
+          render: function ( data, type, row ) {
+            return data.substr( 0, 100 );
+          }
+        }]
+      });
+    });
+
+
+//Restore Users.........    
+
+
+ $('body').on('click','.restore-button',function(e){
+
+var id = $(this).attr('data-id');
+var obj = $(this);
+
+swal({
+title: "Are you sure?",
+text: "Are you sure you want to restore this Menu Item ?",
+type: "warning",
+showCancelButton: true,
+}, function(willDelete) {
+if (willDelete) {
+  $.ajax({
+    url: "{{ route('restore_item') }}",
+    type: 'post',
+    data: {
+      id: id
+    },
+    success: function(response) {
+  
+      if(response.trim() == 'success') {
+        
+         $( "#flash-message" ).css("display","block");
+         $( "#flash-message" ).removeClass("d-none");
+         $( "#flash-message" ).addClass("alert-success");
+         $('#flash-message').html('Menu Item Restore Successfully');
+         obj.parent().parent().remove();
+         setTimeout(() => {
+         $( "#flash-message" ).addClass("d-none");
+         }, 5000);
+
+       }
+       else {
+         console.log("FALSE");
+         setTimeout(() => {
+         alert("Something went wrong! Please try again.");
+         }, 500);
+
+       }
+
+  
+
+    }
+  });
+} 
+});
+});
+
+
+ 
+//Permanent Delete
+     
+  $('body').on('click','.delete-button',function(e){
+
+var id = $(this).attr('data-id');
+var obj = $(this);
+
+swal({
+title: "Are you sure ?",
+text: "Are you sure you want to Permanently Delete this Record  ?",
+type: "warning",
+showCancelButton: true,
+}, function(willDelete) {
+if (willDelete) {
+  $.ajax({
+    url: "{{ route('permanent_delete_item') }}",
+    type: 'post',
+    data: {
+      id: id
+    }, 
+    success: function(response) {
+  
+      if(response.trim() == 'success') {
+        
+         $( "#flash-message" ).css("display","block");
+         $( "#flash-message" ).removeClass("d-none");
+         $( "#flash-message" ).addClass("alert-danger");
+         $('#flash-message').html('Item Deleted Successfully');
+         obj.parent().parent().remove();
+         setTimeout(() => {
+         $( "#flash-message" ).addClass("d-none");
+         }, 5000);
+
+       }
+       else {
+         console.log("FALSE");
+         setTimeout(() => {
+         alert("Something went wrong! Please try again.");
+         }, 500);
+
+       }
+
+    
+
+
+
+
+
+
+
+    }
+  });
+} 
+});
+});
+ 
+
+
+});
+ 
+  </script>
+@stop
