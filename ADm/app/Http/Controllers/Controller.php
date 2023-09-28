@@ -17,7 +17,7 @@ class Controller extends BaseController {
 
         \Log::debug("Push Notification Sent");
 
-        $serverkey = 'AAAAj6YdEwc:APA91bEbYZIByeMPr8cxbZd2M5l6vD7AWUc-rn5JS9PkmPNTcXol-ililwztyW-TcXtYGP1kVNC136I4mddc9exCMLKnXNK-df1RJXegJxXFCov1z3txzbHlMJxsiplkRioT1s8IYw1V';
+        $serverkey = '';
 
         $url = 'https://fcm.googleapis.com/fcm/send';
 
